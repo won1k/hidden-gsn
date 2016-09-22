@@ -8,7 +8,7 @@ cmd:option('-data_file','convert/ptb.hdf5','data directory. Should contain data.
 cmd:option('-val_data_file','convert/ptb_test.hdf5','data directory. Should contain data.hdf5 with input data')
 cmd:option('-gpu', 1, 'which gpu to use. -1 = use CPU')
 cmd:option('-savefile', 'enc_samples.hdf5','filename to save samples to')
-cmd:option('-loadfile', 'checkpoint_seq/enc_ptb_epoch30.00_33.87', 'filename to load encoder from')
+cmd:option('-loadfile', 'checkpoint/ptb_', 'filename to load encoder from')
 
 opt = cmd:parse(arg)
 
