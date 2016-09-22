@@ -4,8 +4,8 @@ require 'hdf5'
 cmd = torch.CmdLine()
 cmd:option('-auto', 1, '1 if autoencoder (i.e. target = source), 0 otherwise')
 
-cmd:option('-data_file','convert_seq/ptb_seq.hdf5','data directory. Should contain data.hdf5 with input data')
-cmd:option('-val_data_file','convert_seq/ptb_seq_test.hdf5','data directory. Should contain data.hdf5 with input data')
+cmd:option('-data_file','convert/ptb.hdf5','data directory. Should contain data.hdf5 with input data')
+cmd:option('-val_data_file','convert/ptb_test.hdf5','data directory. Should contain data.hdf5 with input data')
 cmd:option('-gpu', 1, 'which gpu to use. -1 = use CPU')
 cmd:option('-savefile', 'enc_samples.hdf5','filename to save samples to')
 cmd:option('-loadfile', 'checkpoint_seq/enc_ptb_epoch30.00_33.87', 'filename to load encoder from')
@@ -62,6 +62,7 @@ end
 function encodeDecode(data, encoder, decoder, file_name)
 	print("Saving to " .. file_name)
 	local f = hdf5.open(file_name,'w')
+	local samplefile = hdf5.open(opt.savefile,'w')
 	for i = 1, data:size() do
 		local sentlen = data.lengths[i]
 		print("Sentence length: ", sentlen)
@@ -70,6 +71,7 @@ function encodeDecode(data, encoder, decoder, file_name)
         local nsent = input:size(2)
         -- Encoder forward
         local encoderOutput = encoder:forward(input[{{1, sentlen - 1}}])
+        samplefile:write(tostring(sentlen), encoder.output)
         -- Decoder forward
 		forwardConnect(encoder, decoder)
 		local decoderInput = { input[{{sentlen}}] }
@@ -90,6 +92,7 @@ function encodeDecode(data, encoder, decoder, file_name)
 		decoder:forget()
 		f:write(tostring(sentlen), predictions)
 	end
+	samplefile:close()
 	f:close()
 end
 
