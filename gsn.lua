@@ -25,6 +25,12 @@ function GSN:__init(noise, model, criterion, prob, max_grad_norm, learning_rate,
 	self.prevLoss = 1e9
 	self.maxGradNorm = max_grad_norm or 5
 	self.learningRate = learning_rate or 0.7
+
+	if self.gpu > 0 then
+		self.model = self.model:cuda()
+		self.criterion = self.criterion:cuda()
+		self.samples = self.samples:cuda()
+	end
 end
 
 -- :forward expects nbatch x ndim tensor [states]
@@ -38,10 +44,11 @@ function GSN:forward(states)
 		currState = distributions.mvn.rnd(currState, currState, torch.eye(ndim))
 		currState = self.model:forward(currState):clone()
 	end
-	self.samples = currState
 	if self.gpu > 0 then
+		self.samples = currState:cuda()
 		return currState:cuda()
 	else
+		self.samples = currState
 		return currState
 	end
 end
