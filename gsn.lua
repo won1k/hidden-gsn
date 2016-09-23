@@ -2,24 +2,25 @@ require 'nn'
 require 'hdf5'
 require 'nngraph'
 require 'distributions'
+require 'utils'
 
 local GSN = torch.class("GSN")
 
 -- Currently use squared-error loss (nn.MSECriterion())
 -- noise = "gaussian", ...
 -- model: should be nn module (i.e. MLP) with :forward/:backward pass
-function GSN:__init(noise, model, criterion, prob, max_grad_norm, learning_rate)
+function GSN:__init(noise, model, criterion, prob, max_grad_norm, learning_rate, ndim, nhid)
 	self.noise = noise
-	self.model = model
-	self.criterion = criterion
+	self.model = model or utils.make_model(ndim, nhid)
+	self.criterion = criterion or nn.MSECriterion()
 	self.prob = prob
 	self.params, self.gradParams = self.model:getParameters()
 
 	self.samples = torch.Tensor
 	self.currLoss = 0
 	self.prevLoss = 1e9
-	self.maxGradNorm = 5 or max_grad_norm
-	self.learningRate = 0.7 or learning_rate
+	self.maxGradNorm = max_grad_norm or 5
+	self.learningRate = learning_rate or 0.7
 end
 
 -- :forward expects nbatch x ndim tensor [states]
@@ -30,6 +31,7 @@ function GSN:forward(states)
 	local currState = states:clone()
 	for i = 1, k do
 		currState = distributions.mvn.rnd(currState, torch.eye(ndim))
+		currState = model:forward(currState):clone()
 	end
 	self.samples = currState
 	return currState
@@ -52,4 +54,5 @@ function GSN:backward(states, samples)
 		self.gradParams:mul(self.maxGradNorm / gradNorm)
 	end
 	self.params:add(self.gradParams:mul(-self.learningRate))
+	return loss
 end

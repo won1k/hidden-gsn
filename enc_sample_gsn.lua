@@ -1,14 +1,15 @@
 require 'rnn'
 require 'hdf5'
+require 'gsn'
 
 cmd = torch.CmdLine()
 cmd:option('-auto', 1, '1 if autoencoder (i.e. target = source), 0 otherwise')
 
-cmd:option('-data_file','convert/ptb_seq.hdf5','data directory. Should contain data.hdf5 with input data')
-cmd:option('-val_data_file','convert_seq/ptb_seq_test.hdf5','data directory. Should contain data.hdf5 with input data')
+cmd:option('-data_file','convert/ptb.hdf5','data directory. Should contain data.hdf5 with input data')
+cmd:option('-val_data_file','convert/ptb_test.hdf5','data directory. Should contain data.hdf5 with input data')
 cmd:option('-gpu', 1, 'which gpu to use. -1 = use CPU')
 cmd:option('-savefile', 'enc_samples.hdf5','filename to save samples to')
-cmd:option('-loadfile', 'checkpoint/enc_ptb_epoch30.00_33.87', 'filename to load encoder from')
+cmd:option('-loadfile', 'checkpoint/ptb_', 'filename to load encoder from')
 
 opt = cmd:parse(arg)
 
@@ -69,20 +70,9 @@ function encodeDecode(data, encoder, decoder, file_name)
 		local input, output = d[1], d[2]
         local nsent = input:size(2)
         -- Encoder forward
-        encoder:remember()
-        local encoderOutput = {encoder:forward(input[{{1}}])[1]:clone()}
-        -- Apply noise
-        for i = 1, #encoder.lstmLayers do
-			local seqlen = #encoder.lstmLayers[i].outputs
-			encoder.lstmLayers[i].outputs[seqlen]:apply(function(x) return x + torch.random(0,1) end)
-			--enc.lstmLayers[i].cells[seqlen]
-		end
-        --- Add noise in initial vector... (or maybe in initialization???)
-        if sentlen > 2 then
-        	for t = 2, sentlen - 1 do
-        		table.insert(encoderOutput, encoder:forward(input[{{t}}])[1]:clone())
-        	end
-        end
+        local encoderOutput = encoder:forward(input)
+        -- GSN sampling
+        
         -- Decoder forward
 		forwardConnect(encoder, decoder)
 		local decoderInput = { input[{{sentlen}}] }
