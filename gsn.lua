@@ -33,7 +33,7 @@ function GSN:forward(states)
 	local k = torch.geometric(self.prob)
 	local currState = states:clone()
 	for i = 1, k do
-		currState = distributions.mvn.rnd(currState, torch.eye(ndim))
+		currState = distributions.mvn.rnd(currState, currState, torch.eye(ndim))
 		currState = model:forward(currState):clone()
 	end
 	self.samples = currState
