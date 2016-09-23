@@ -10,12 +10,13 @@ local GSN = torch.class("GSN")
 -- Currently use squared-error loss (nn.MSECriterion())
 -- noise = "gaussian", ...
 -- model: should be nn module (i.e. MLP) with :forward/:backward pass
-function GSN:__init(noise, model, criterion, prob, max_grad_norm, learning_rate, ndim, nhid)
+function GSN:__init(noise, model, criterion, prob, max_grad_norm, learning_rate, ndim, nhid, gpu)
 	self.noise = noise
 	self.model = model or make_model(ndim, nhid)
 	self.criterion = criterion or nn.MSECriterion()
 	self.prob = prob
 	self.params, self.gradParams = self.model:getParameters()
+	self.gpu = gpu or 1
 
 	self.samples = torch.Tensor
 	self.currLoss = 0
@@ -26,6 +27,7 @@ end
 
 -- :forward expects nbatch x ndim tensor [states]
 function GSN:forward(states)
+	states = states:double()
 	local nbatch = states:size(1)
 	local ndim = states:size(2)
 	local k = torch.geometric(self.prob)
@@ -35,7 +37,11 @@ function GSN:forward(states)
 		currState = model:forward(currState):clone()
 	end
 	self.samples = currState
-	return currState
+	if self.gpu > 0 then
+		return currState:cuda()
+	else
+		return currState
+	end
 end
 
 -- :backward expects nbatch x ndim tensor [states], samples (or uses previous)

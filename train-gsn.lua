@@ -85,7 +85,6 @@ function train(data, valid_data, encoder, gsn)
 			--	encoder.lstmLayers[i].outputs[sentlen-1]
 			--	encoder.lstmLayers[i].cells[sentlen-1]
 			--end
-			print( encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
 	        encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1] = 
 	        	gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1]):clone()
 	        gsn:backward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
@@ -125,7 +124,7 @@ function main()
 	-- Load models
 	local encoder = torch.load(opt.encfile .. 'encoder.t7')
 	encoder:forget()
-	local gsn = GSN(opt.noise, nil, opt.criterion, opt.prob, opt.max_grad_norm, opt.learning_rate, opt.enc_dim, opt.hid_dim)
+	local gsn = GSN(opt.noise, nil, opt.criterion, opt.prob, opt.max_grad_norm, opt.learning_rate, opt.enc_dim, opt.hid_dim, opt.gpu)
 	print("Models loaded!")
 	-- Load data
 	local train_data = data.new(opt, opt.data_file)
