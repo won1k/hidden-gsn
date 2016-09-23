@@ -29,7 +29,6 @@ function GSN:__init(noise, model, criterion, prob, max_grad_norm, learning_rate,
 	if self.gpu > 0 then
 		self.model = self.model:cuda()
 		self.criterion = self.criterion:cuda()
-		self.samples = self.samples:cuda()
 	end
 end
 
