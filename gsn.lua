@@ -13,7 +13,9 @@ local GSN = torch.class("GSN")
 function GSN:__init(noise, model, criterion, prob, max_grad_norm, learning_rate, ndim, nhid, gpu)
 	self.noise = noise
 	self.model = model or make_model(ndim, nhid)
-	self.criterion = criterion or nn.MSECriterion()
+	if criterion == 'mse' then
+		self.criterion = nn.MSECriterion()
+	end
 	self.prob = prob
 	self.params, self.gradParams = self.model:getParameters()
 	self.gpu = gpu or 1
