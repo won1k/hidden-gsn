@@ -85,6 +85,7 @@ function train(data, valid_data, encoder, gsn)
 			--	encoder.lstmLayers[i].outputs[sentlen-1]
 			--	encoder.lstmLayers[i].cells[sentlen-1]
 			--end
+			print( encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
 	        encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1] = 
 	        	gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1]):clone()
 	        gsn:backward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
