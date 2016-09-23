@@ -1,3 +1,4 @@
+package.path = package.path..";/n/rush_lab/wonlee/hidden-gsn/?.lua"
 require 'rnn'
 require 'hdf5'
 require 'gsn'
@@ -121,7 +122,7 @@ function main()
 		require 'cunn'
 	end
 	-- Load models
-	local encoder = torch.load(opt.loadfile .. 'encoder.t7')
+	local encoder = torch.load(opt.encfile .. 'encoder.t7')
 	encoder:forget()
 	local gsn = GSN(opt.noise, nil, opt.criterion, opt.prob, opt.max_grad_norm, opt.learning_rate, opt.enc_dim, opt.hid_dim)
 	print("Models loaded!")

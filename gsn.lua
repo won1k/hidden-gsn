@@ -1,3 +1,4 @@
+package.path = package.path..";/n/rush_lab/wonlee/hidden-gsn/?.lua"
 require 'nn'
 require 'hdf5'
 require 'nngraph'
