@@ -12,7 +12,7 @@ local GSN = torch.class("GSN")
 -- model: should be nn module (i.e. MLP) with :forward/:backward pass
 function GSN:__init(noise, model, criterion, prob, max_grad_norm, learning_rate, ndim, nhid)
 	self.noise = noise
-	self.model = model or utils.make_model(ndim, nhid)
+	self.model = model or make_model(ndim, nhid)
 	self.criterion = criterion or nn.MSECriterion()
 	self.prob = prob
 	self.params, self.gradParams = self.model:getParameters()
