@@ -40,7 +40,7 @@ function GSN:forward(states)
 	local k = torch.geometric(self.prob)
 	local currState = states:clone()
 	for i = 1, k do
-		currState = distributions.mvn.rnd(currState, currState:double(), torch.eye(ndim))
+		currState = distributions.mvn.rnd(currState:double(), currState:double(), torch.eye(ndim))
 		currState = self.model:forward(currState:cuda()):clone()
 	end
 	if self.gpu > 0 then
