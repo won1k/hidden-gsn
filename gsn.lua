@@ -3,7 +3,7 @@ require 'nn'
 require 'hdf5'
 require 'nngraph'
 require 'distributions'
-utils = require 'utils'
+require 'utils'
 
 local GSN = torch.class("GSN")
 
@@ -34,7 +34,7 @@ function GSN:forward(states)
 	local currState = states:clone()
 	for i = 1, k do
 		currState = distributions.mvn.rnd(currState, currState, torch.eye(ndim))
-		currState = model:forward(currState):clone()
+		currState = self.model:forward(currState):clone()
 	end
 	self.samples = currState
 	if self.gpu > 0 then
