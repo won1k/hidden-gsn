@@ -2,6 +2,16 @@ import h5py
 import numpy as np
 import csv
 
+global args
+parser = argparse.ArgumentParser(
+  description=__doc__,
+  formatter_class=argparse.RawDescriptionHelpFormatter)
+parser.add_argument('dictfile', help="Raw chunking text file", type=str) # ptb/train.txt
+parser.add_argument('testfile', help="Raw chunking test text file", type=str) # ptb/test.txt
+parser.add_argument('outputfile', help="HDF5 output file", type=str) # convert_seq/ptb_seq
+parser.add_argument('dwin', help="Window dimension (0 if no padding)", type=int) # 5
+args = parser.parse_args(arguments)
+
 # Load dict
 idx2w = {}
 with open('convert_seq/ptb_seq.dict','r') as f:

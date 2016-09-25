@@ -77,7 +77,7 @@ function encodeDecode(data, encoder, decoder, gsn, file_name)
         -- GSN sampling
         print(sentlen - 1, #encoder.lstmLayers[opt.num_layers].outputs)
         encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1] = 
-        	gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
+        	gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1]):clone()
         -- Decoder forward
 		forwardConnect(encoder, decoder)
 		local decoderInput = { input[{{sentlen}}] }
