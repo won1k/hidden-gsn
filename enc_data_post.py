@@ -25,7 +25,7 @@ with open(args.dictfile,'r') as f:
 # Load/translate results
 with open(args.trainfile.split(".")[0] + "_words.txt",'w') as f:
 	train = h5py.File(args.trainfile, 'r')
-	for key in train['sentlens']
+	for key in train['sentlens']:
 		indices = train[str(key)]
 		for row in indices:
 			sentence = [idx2w[idx] for idx in row]
