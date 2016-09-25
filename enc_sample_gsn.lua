@@ -14,9 +14,8 @@ cmd:option('-loadfile', 'checkpoint/ptb_', 'filename to load encoder from')
 
 opt = cmd:parse(arg)
 
-function forwardConnect(enc, dec)
+function forwardConnect(enc, dec, seqlen)
 	for i = 1, #enc.lstmLayers do
-		local seqlen = #enc.lstmLayers[i].outputs
 		dec.lstmLayers[i].userPrevOutput = nn.rnn.recursiveCopy(dec.lstmLayers[i].userPrevOutput, enc.lstmLayers[i].outputs[seqlen])
 		dec.lstmLayers[i].userPrevCell = nn.rnn.recursiveCopy(dec.lstmLayers[i].userPrevCell, enc.lstmLayers[i].cells[seqlen])
 	end
@@ -75,11 +74,10 @@ function encodeDecode(data, encoder, decoder, gsn, file_name)
         -- Encoder forward
         local encoderOutput = encoder:forward(input[{{1, sentlen-1}}])
         -- GSN sampling
-        print(sentlen - 1, #encoder.lstmLayers[opt.num_layers].outputs)
         encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1] = 
         	gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1]):clone()
         -- Decoder forward
-		forwardConnect(encoder, decoder)
+		forwardConnect(encoder, decoder, sentlen - 1)
 		local decoderInput = { input[{{sentlen}}] }
 		decoder:remember()
 		local decoderOutput = { decoder:forward(decoderInput[1])[1]:clone() }
