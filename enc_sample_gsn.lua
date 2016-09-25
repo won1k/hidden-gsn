@@ -72,7 +72,7 @@ function encodeDecode(data, encoder, decoder, file_name)
         -- Encoder forward
         local encoderOutput = encoder:forward(input)
         -- GSN sampling
-        
+
         -- Decoder forward
 		forwardConnect(encoder, decoder)
 		local decoderInput = { input[{{sentlen}}] }
@@ -106,14 +106,15 @@ function main()
 	-- Load models
 	encoder = torch.load(opt.loadfile .. 'encoder.t7')
 	decoder = torch.load(opt.loadfile .. 'decoder.t7')
+	gsn = torch.load(opt.loadfile .. 'gsn.t7')
 	print("Models loaded!")
 	-- Load data
 	local train_data = data.new(opt, opt.data_file)
 	local valid_data = data.new(opt, opt.val_data_file)
 	print("Data loaded!")
 	-- Check/save results
-	encodeDecode(train_data, encoder, decoder, 'enc_ptb_results_noise5_train.hdf5')
-	encodeDecode(valid_data, encoder, decoder, 'enc_ptb_results_noise5_valid.hdf5')
+	encodeDecode(train_data, encoder, decoder, 'enc_ptb_results_gsn_train.hdf5')
+	encodeDecode(valid_data, encoder, decoder, 'enc_ptb_results_gsn_valid.hdf5')
 end
 
 main()

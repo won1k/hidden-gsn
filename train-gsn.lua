@@ -74,7 +74,7 @@ function train(data, valid_data, encoder, gsn)
 	for t = 1, opt.epochs do
 		for i = 1, data:size() do
 			local sentlen = data.lengths[i]
-			print("\rSentence length: ", sentlen)
+			print("Sentence length: ", sentlen)
 			local d = data[sentlen]
 			local input, output = d[1], d[2]
 	        local nsent = input:size(2)
@@ -85,8 +85,7 @@ function train(data, valid_data, encoder, gsn)
 			--	encoder.lstmLayers[i].outputs[sentlen-1]
 			--	encoder.lstmLayers[i].cells[sentlen-1]
 			--end
-	        encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1] = 
-	        	gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1]):clone()
+	        gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1]):clone()
 	        gsn:backward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
 	        -- Forget for next
 			encoder:forget()
@@ -133,7 +132,7 @@ function main()
 	-- Train
 	train(train_data, valid_data, encoder, gsn)
 	-- Check/save results
-	torch.save('gsn.t7', gsn)
+	torch.save(opt.encfile .. 'gsn.t7', gsn)
 end
 
 main()
