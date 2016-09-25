@@ -41,15 +41,13 @@ function GSN:forward(states)
 	local currState = states:clone()
 	for i = 1, k do
 		currState = distributions.mvn.rnd(currState:double(), currState:double(), torch.eye(ndim))
+		if self.gpu > 0 then
+			currState = currState:cuda()
+		end
 		currState = self.model:forward(currState:cuda()):clone()
 	end
-	if self.gpu > 0 then
-		self.samples = currState:cuda()
-		return currState:cuda()
-	else
-		self.samples = currState
-		return currState
-	end
+	self.samples = currState
+	return currState
 end
 
 -- :backward expects nbatch x ndim tensor [states], samples (or uses previous)
@@ -62,8 +60,7 @@ function GSN:backward(states, samples)
 	end
 	local pred = self.model:forward(currSamples)
 	local loss = self.criterion:forward(pred, states)
-	local gradOutput = self.criterion:backward(pred, states)
-	self.model:backward(currSamples, gradOutput)
+	self.model:backward(currSamples, self.criterion:backward(pred, states))
 	local gradNorm = self.gradParams:norm()
 	if gradNorm > self.maxGradNorm then
 		self.gradParams:mul(self.maxGradNorm / gradNorm)

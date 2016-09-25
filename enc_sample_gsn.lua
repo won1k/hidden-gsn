@@ -4,6 +4,7 @@ require 'gsn'
 
 cmd = torch.CmdLine()
 cmd:option('-auto', 1, '1 if autoencoder (i.e. target = source), 0 otherwise')
+cmd:option('-num_layers', 2, 'number of autoencoder LSTM layers')
 
 cmd:option('-data_file','convert/ptb.hdf5','data directory. Should contain data.hdf5 with input data')
 cmd:option('-val_data_file','convert/ptb_test.hdf5','data directory. Should contain data.hdf5 with input data')
@@ -60,7 +61,7 @@ function data.__index(self, idx)
 	return {input, output}
 end
 
-function encodeDecode(data, encoder, decoder, file_name)
+function encodeDecode(data, encoder, decoder, gsn, file_name)
 	print("Saving to " .. file_name)
 	local f = hdf5.open(file_name,'w')
 	for i = 1, data:size() do
@@ -72,7 +73,9 @@ function encodeDecode(data, encoder, decoder, file_name)
         -- Encoder forward
         local encoderOutput = encoder:forward(input)
         -- GSN sampling
-
+        print(sentlen - 1, #encoder.lstmLayers[opt.num_layers].outputs)
+        encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1] = 
+        	gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
         -- Decoder forward
 		forwardConnect(encoder, decoder)
 		local decoderInput = { input[{{sentlen}}] }
@@ -113,8 +116,8 @@ function main()
 	local valid_data = data.new(opt, opt.val_data_file)
 	print("Data loaded!")
 	-- Check/save results
-	encodeDecode(train_data, encoder, decoder, 'enc_ptb_results_gsn_train.hdf5')
-	encodeDecode(valid_data, encoder, decoder, 'enc_ptb_results_gsn_valid.hdf5')
+	encodeDecode(train_data, encoder, decoder, gsn, 'enc_ptb_results_gsn_train.hdf5')
+	encodeDecode(valid_data, encoder, decoder, gsn, 'enc_ptb_results_gsn_valid.hdf5')
 end
 
 main()
