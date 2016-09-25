@@ -2,6 +2,7 @@ import h5py
 import numpy as np
 import csv
 import argparse
+import sys
 
 global args
 parser = argparse.ArgumentParser(
@@ -10,7 +11,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('dictfile', help="Raw chunking text file", type=str) # convert/ptb.dict
 parser.add_argument('trainfile', help="HDF5 train file", type=str) # enc_ptb_results_gsn_train.hdf5
 parser.add_argument('validfile', help="HDF5 valid file", type=str) # enc_ptb_results_gsn_valid.hdf5
-args = parser.parse_args(arguments)
+args = parser.parse_args(sys.argv[1:])
 
 # Load dict
 idx2w = {}
