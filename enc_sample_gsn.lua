@@ -64,8 +64,8 @@ end
 function encodeDecode(data, encoder, decoder, gsn, file_name)
 	print("Saving to " .. file_name)
 	local f = hdf5.open(file_name,'w')
-	encoder:forget()
-	decoder:forget()
+	--encoder:forget()
+	--decoder:forget()
 	for i = 1, data:size() do
 		local sentlen = data.lengths[i]
 		print("Sentence length: ", sentlen)
