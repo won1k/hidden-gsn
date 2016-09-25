@@ -71,6 +71,8 @@ end
 
 function train(data, valid_data, encoder, gsn)
 	print("Training GSN...")
+	local loss = 0
+	local total = 0
 	for t = 1, opt.epochs do
 		for i = 1, data:size() do
 			local sentlen = data.lengths[i]
@@ -86,12 +88,13 @@ function train(data, valid_data, encoder, gsn)
 			--	encoder.lstmLayers[i].cells[sentlen-1]
 			--end
 	        gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
-	        gsn:backward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
+	        loss = loss + opt.enc_dim * nsent * gsn:backward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
+	        total = total + opt.enc_dim * nsent
 	        -- Forget for next
 			encoder:forget()
 		end
 		local score = eval(valid_data, encoder, gsn)
-		print("Epoch: ", t, "Score: ", score)
+		print("Epoch: ", t, "Training err: ", loss/total, "Valid err: ", score)
 	end
 end
 
