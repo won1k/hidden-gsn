@@ -64,6 +64,8 @@ end
 function encodeDecode(data, encoder, decoder, gsn, file_name)
 	print("Saving to " .. file_name)
 	local f = hdf5.open(file_name,'w')
+	encoder:forget()
+	decoder:forget()
 	for i = 1, data:size() do
 		local sentlen = data.lengths[i]
 		print("Sentence length: ", sentlen)
@@ -71,7 +73,7 @@ function encodeDecode(data, encoder, decoder, gsn, file_name)
 		local input, output = d[1], d[2]
         local nsent = input:size(2)
         -- Encoder forward
-        local encoderOutput = encoder:forward(input)
+        local encoderOutput = encoder:forward(input[{{1, sentlen-1}}])
         -- GSN sampling
         print(sentlen - 1, #encoder.lstmLayers[opt.num_layers].outputs)
         encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1] = 
@@ -109,8 +111,6 @@ function main()
 	-- Load models
 	encoder = torch.load(opt.loadfile .. 'encoder.t7')
 	decoder = torch.load(opt.loadfile .. 'decoder.t7')
-	encoder:forget()
-	decoder:forget()
 	gsn = torch.load(opt.loadfile .. 'gsn.t7')
 	print("Models loaded!")
 	-- Load data
