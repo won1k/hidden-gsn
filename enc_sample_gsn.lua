@@ -109,6 +109,8 @@ function main()
 	-- Load models
 	encoder = torch.load(opt.loadfile .. 'encoder.t7')
 	decoder = torch.load(opt.loadfile .. 'decoder.t7')
+	encoder:forget()
+	decoder:forget()
 	gsn = torch.load(opt.loadfile .. 'gsn.t7')
 	print("Models loaded!")
 	-- Load data
