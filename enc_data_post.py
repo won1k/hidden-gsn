@@ -23,9 +23,9 @@ with open(args.dictfile,'r') as f:
 	print "Dict loaded!"
 
 # Load/translate results
-with open(args.trainfile.split(".")[0] + "_words.txt",'w') as f:
+with open(args.trainfile.split(".")[0].split("/")[1] + "_words.txt",'w') as f:
 	train = h5py.File(args.trainfile, 'r')
-	for key in train['sentlens']:
+	for key in train['sent_lens']:
 		indices = train[str(key)]
 		for row in indices:
 			sentence = [idx2w[idx] for idx in row]
@@ -34,9 +34,9 @@ with open(args.trainfile.split(".")[0] + "_words.txt",'w') as f:
 	train.close()
 	print "Train file translated!"
 
-with open(args.validfile.split(".")[0] + "_words.txt",'w') as f:
+with open(args.validfile.split(".")[0].split("/")[1] + "_words.txt",'w') as f:
 	test = h5py.File(args.validfile, 'r')
-	for key in test['sentlens']:
+	for key in test['sent_lens']:
 		indices = test[str(key)]
 		for row in indices:
 			sentence = [idx2w[idx] for idx in row]
