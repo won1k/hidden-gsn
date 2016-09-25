@@ -85,7 +85,7 @@ function train(data, valid_data, encoder, gsn)
 			--	encoder.lstmLayers[i].outputs[sentlen-1]
 			--	encoder.lstmLayers[i].cells[sentlen-1]
 			--end
-	        gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1]):clone()
+	        gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
 	        gsn:backward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
 	        -- Forget for next
 			encoder:forget()
@@ -104,8 +104,7 @@ function eval(data, encoder, gsn)
 		local input, output = d[1], d[2]
 		local nbatch = input:size(1)
 		local encoderOutput = encoder:forward(input[{{1, sentlen - 1}}])
-		encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1] = 
-	        gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1]):clone()
+		gsn:forward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
 		loss = loss + opt.enc_dim * nbatch * gsn:backward(encoder.lstmLayers[#encoder.lstmLayers].outputs[sentlen-1])
 		total = total + opt.enc_dim * nbatch
 		encoder:forget()
