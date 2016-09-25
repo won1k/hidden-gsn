@@ -23,8 +23,8 @@ with open(args.dictfile,'r') as f:
 	print "Dict loaded!"
 
 # Load/translate results
-with open(opt.trainfile.split(".")[0] + "_words.txt",'w') as f:
-	train = h5py.File(opt.trainfile, 'r')
+with open(args.trainfile.split(".")[0] + "_words.txt",'w') as f:
+	train = h5py.File(args.trainfile, 'r')
 	for key in train.keys():
 		indices = np.transpose(train[key])
 		for row in indices:
@@ -34,8 +34,8 @@ with open(opt.trainfile.split(".")[0] + "_words.txt",'w') as f:
 	train.close()
 	print "Train file translated!"
 
-with open(opt.validfile.split(".")[0] + "_words.txt",'w') as f:
-	test = h5py.File(opt.validfile, 'r')
+with open(args.validfile.split(".")[0] + "_words.txt",'w') as f:
+	test = h5py.File(args.validfile, 'r')
 	for key in test.keys():
 		indices = np.transpose(test[key])
 		for row in indices:
