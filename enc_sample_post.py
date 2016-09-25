@@ -6,15 +6,14 @@ global args
 parser = argparse.ArgumentParser(
   description=__doc__,
   formatter_class=argparse.RawDescriptionHelpFormatter)
-parser.add_argument('dictfile', help="Raw chunking text file", type=str) # ptb/train.txt
-parser.add_argument('testfile', help="Raw chunking test text file", type=str) # ptb/test.txt
-parser.add_argument('outputfile', help="HDF5 output file", type=str) # convert_seq/ptb_seq
-parser.add_argument('dwin', help="Window dimension (0 if no padding)", type=int) # 5
+parser.add_argument('dictfile', help="Raw chunking text file", type=str) # convert/ptb.dict
+parser.add_argument('trainfile', help="HDF5 train file", type=str) # enc_ptb_results_gsn_train.hdf5
+parser.add_argument('validfile', help="HDF5 valid file", type=str) # enc_ptb_results_gsn_valid.hdf5
 args = parser.parse_args(arguments)
 
 # Load dict
 idx2w = {}
-with open('convert_seq/ptb_seq.dict','r') as f:
+with open(args.dictfile,'r') as f:
 	f = csv.reader(f)
 	for row in f:
 		row = row[0].split(' ')
@@ -22,8 +21,8 @@ with open('convert_seq/ptb_seq.dict','r') as f:
 	print "Dict loaded!"
 
 # Load/translate results
-with open('enc_ptb_results_noise_train_words.txt','w') as f:
-	train = h5py.File('enc_ptb_results_noise_train.hdf5', 'r')
+with open(opt.trainfile.split(".")[0] + "_words.txt",'w') as f:
+	train = h5py.File(opt.trainfile, 'r')
 	for key in train.keys():
 		indices = np.transpose(train[key])
 		for row in indices:
@@ -33,8 +32,8 @@ with open('enc_ptb_results_noise_train_words.txt','w') as f:
 	train.close()
 	print "Train file translated!"
 
-with open('enc_ptb_results_noise_valid_words.txt','w') as f:
-	test = h5py.File('enc_ptb_results_noise_valid.hdf5', 'r')
+with open(opt.validfile.split(".")[0] + "_words.txt",'w') as f:
+	test = h5py.File(opt.validfile, 'r')
 	for key in test.keys():
 		indices = np.transpose(test[key])
 		for row in indices:
