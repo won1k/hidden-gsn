@@ -1,0 +1,137 @@
+function eval(data)
+  encoder_clones[1]:evaluate()
+    decoder_clones[1]:evaluate() -- just need one clone
+      generator:evaluate()
+        if opt.brnn == 1 then
+	    encoder_bwd_clones[1]:evaluate()
+	      end
+
+  local nll = 0
+    local nll_cll = 0
+      local total = 0
+        for i = 1, data:size() do
+	    local d = data[i]
+	        local target, target_out, nonzeros, source = d[1], d[2], d[3], d[4]
+		    local batch_l, target_l, source_l = d[5], d[6], d[7]
+		        local source_features = d[9]
+			    local alignment = d[10]
+			        local norm_alignment
+				    if opt.guided_alignment == 1 then
+				          replicator=nn.Replicate(alignment:size(2),2)
+					        if opt.gpuid >= 0 then
+						        cutorch.setDevice(opt.gpuid)
+							        if opt.gpuid2 >= 0 then -- alignment is in the 2nd GPU
+								          cutorch.setDevice(opt.gpuid2)
+									          end
+										          replicator = replicator:cuda()
+											        end
+												      norm_alignment = torch.cdiv(alignment, replicator:forward(torch.sum(alignment,2):squeeze(2)))
+												            norm_alignment[norm_alignment:ne(norm_alignment)] = 0
+													        end
+
+    if opt.gpuid >= 0 and opt.gpuid2 >= 0 then
+          cutorch.setDevice(opt.gpuid)
+	      end
+	          local rnn_state_enc = reset_state(init_fwd_enc, batch_l)
+		      local context = context_proto[{{1, batch_l}, {1, source_l}}]
+		          -- forward prop encoder
+			      for t = 1, source_l do
+			            local encoder_input = {source[t]}
+				          if data.num_source_features > 0 then
+					          append_table(encoder_input, source_features[t])
+						        end
+							      append_table(encoder_input, rnn_state_enc)
+							            local out = encoder_clones[1]:forward(encoder_input)
+								          rnn_state_enc = out
+									        context[{{},t}]:copy(out[#out])
+										    end
+
+    if opt.gpuid >= 0 and opt.gpuid2 >= 0 then
+          cutorch.setDevice(opt.gpuid2)
+	        local context2 = context_proto2[{{1, batch_l}, {1, source_l}}]
+		      context2:copy(context)
+		            context = context2
+			        end
+
+    local rnn_state_dec = reset_state(init_fwd_dec, batch_l)
+        if opt.init_dec == 1 then
+	      for L = 1, opt.num_layers do
+	              rnn_state_dec[L*2-1+opt.input_feed]:copy(rnn_state_enc[L*2-1])
+		              rnn_state_dec[L*2+opt.input_feed]:copy(rnn_state_enc[L*2])
+			            end
+				        end
+
+    if opt.brnn == 1 then
+          local rnn_state_enc = reset_state(init_fwd_enc, batch_l)
+	        for t = source_l, 1, -1 do
+		        local encoder_input = {source[t]}
+			        if data.num_source_features > 0 then
+				          append_table(encoder_input, source_features[t])
+					          end
+						          append_table(encoder_input, rnn_state_enc)
+							          local out = encoder_bwd_clones[1]:forward(encoder_input)
+								          rnn_state_enc = out
+									          context[{{},t}]:add(out[#out])
+										        end
+											      if opt.init_dec == 1 then
+											              for L = 1, opt.num_layers do
+												                rnn_state_dec[L*2-1+opt.input_feed]:add(rnn_state_enc[L*2-1])
+														          rnn_state_dec[L*2+opt.input_feed]:add(rnn_state_enc[L*2])
+															          end
+																        end
+																	    end
+
+    local loss = 0
+    local loss_cll = 0
+    local attn_outputs = {}
+    for t = 1, target_l do
+    	local decoder_input
+	if opt.attn == 1 then
+	   decoder_input = {target[t], context, table.unpack(rnn_state_dec)}
+	else
+	    decoder_input = {target[t], context[{{},source_l}], table.unpack(rnn_state_dec)end
+							      local out = decoder_clones[1]:forward(decoder_input)
+
+      local out_pred_idx = #out
+            if opt.guided_alignment == 1 then
+	            out_pred_idx = #out-1
+		            table.insert(attn_outputs, out[#out])
+			          end
+
+      rnn_state_dec = {}
+            if opt.input_feed == 1 then
+	            table.insert(rnn_state_dec, out[out_pred_idx])
+		          end
+			        for j = 1, out_pred_idx-1 do
+				        table.insert(rnn_state_dec, out[j])
+					      end
+					            local pred = generator:forward(out[out_pred_idx])
+
+      local input = pred
+            local output = target_out[t]
+	          if opt.guided_alignment == 1 then
+		          input={input, attn_outputs[t]}
+			          output={output, norm_alignment[{{},{},t}]}
+				        end
+
+      loss = loss + criterion:forward(input, output)
+
+      if opt.guided_alignment == 1 then
+              loss_cll = loss_cll + cll_criterion:forward(input[1], output[1])
+	            end
+		        end
+			    nll = nll + loss
+			        if opt.guided_alignment == 1 then
+				      nll_cll = nll_cll + loss_cll
+				          end
+					      total = total + nonzeros
+					        end
+						  local valid = math.exp(nll / total)
+						    print("Valid", valid)
+						      if opt.guided_alignment == 1 then
+						          local valid_cll = math.exp(nll_cll / total)
+							      print("Valid_cll", valid_cll)
+							        end
+								  collectgarbage()
+								    return valid
+								    end
